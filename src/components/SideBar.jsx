@@ -12,8 +12,8 @@ export default function Sidebar() {
 
   const menuItems = [
     { path: "/", label: "Home", roles: ["user", "admin"] },
-    { path: "/report", label: "Report", roles: ["admin"] },
-    { path: "/user", label: "User Management", roles: ["admin"] },
+    { path: "/report", label: "Report", roles: ["user","admin"] },
+    { path: "/reportAll", label: "Report User", roles: ["admin"] },
   ];
 
   return (
@@ -26,7 +26,7 @@ export default function Sidebar() {
       </button>
 
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-800 text-white p-5 transform transition-transform duration-300 z-50 ${
+        className={`fixed top-0 left-0 h-full md:h-screen w-64 bg-gray-800 text-white p-5 transform transition-transform duration-300 z-50 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0`}
       >
