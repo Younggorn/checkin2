@@ -13,7 +13,6 @@ export default function ReportAll() {
   const [limit] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
 
-  // ✅ ดึงรายชื่อพนักงานจาก API
   const fetchEmployees = async () => {
     try {
       const response = await axios.get(
@@ -32,16 +31,18 @@ export default function ReportAll() {
   };
   const getUserData = async () => {
     if (!selectedUserId) return;
-  
+
     try {
-      const apiUrl = `${import.meta.env.VITE_API_URL}/api/v1/user/getUserCheckingData`;
-  
+      const apiUrl = `${
+        import.meta.env.VITE_API_URL
+      }/api/v1/user/getUserCheckingData`;
+
       const response = await axios.post(
         apiUrl,
         {
-          user_id: selectedUserId, 
-          page,  
-          limit, 
+          user_id: selectedUserId,
+          page,
+          limit,
           startDate: startDate || undefined,
           endDate: endDate || undefined,
         },
@@ -52,7 +53,7 @@ export default function ReportAll() {
           },
         }
       );
-  
+
       if (response.data.status === "success") {
         setData(response.data.data);
         setTotalPages(response.data.totalPages);
@@ -61,7 +62,6 @@ export default function ReportAll() {
       console.error("Error fetching report data:", error);
     }
   };
-  
 
   useEffect(() => {
     fetchEmployees();
@@ -71,8 +71,7 @@ export default function ReportAll() {
     if (selectedUserId) {
       getUserData();
     }
-  }, [selectedUserId, startDate, endDate, page]); 
-  
+  }, [selectedUserId, startDate, endDate, page]);
 
   const formatDate = (dateString) =>
     new Date(dateString).toISOString().split("T")[0]; // YYYY-MM-DD
@@ -99,22 +98,28 @@ export default function ReportAll() {
       </div>
 
       {/* ✅ Date Range Filter */}
-      <div className="flex space-x-4 mb-4">
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border p-2 rounded"
-        />
+      <div className="flex space-x-4 mb-4  items-end">
+        <div className="flex flex-col gap-2 ">
+          <span className="text-lg">Start Date</span>{" "}
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border p-2 rounded"
+          />
+        </div>
+        <div className="flex flex-col gap-2 ">
+          <span className="text-lg">End Date</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border p-2 rounded"
+          />
+        </div>
         <button
           onClick={getUserData}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-7 py-1 rounded"
         >
           Filter
         </button>
@@ -154,7 +159,7 @@ export default function ReportAll() {
                     <img
                       src={`${
                         import.meta.env.VITE_API_URL
-                      }/${entry.photo_url.replace(/\\/g, "/")}`}    
+                      }/${entry.photo_url.replace(/\\/g, "/")}`}
                       alt="Check-in"
                       className="w-32 h-32 object-cover rounded-md border border-gray-300"
                     />

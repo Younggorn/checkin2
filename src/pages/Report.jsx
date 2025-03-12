@@ -14,7 +14,9 @@ export default function Report() {
   // ✅ ดึงข้อมูลจาก API พร้อม Filter
   const getOwnData = async () => {
     try {
-      let apiUrl = `${import.meta.env.VITE_API_URL}/api/v1/user/getOwntime?page=${page}&limit=${limit}`;
+      let apiUrl = `${
+        import.meta.env.VITE_API_URL
+      }/api/v1/user/getOwntime?page=${page}&limit=${limit}`;
 
       if (startDate) apiUrl += `&startDate=${startDate}`;
       if (endDate) apiUrl += `&endDate=${endDate}`;
@@ -36,29 +38,41 @@ export default function Report() {
     if (user) {
       getOwnData();
     }
-  }, [user, page, startDate, endDate]); 
+  }, [user, page, startDate, endDate]);
 
-  const formatDate = (dateString) => new Date(dateString).toISOString().split("T")[0]; // YYYY-MM-DD
+  const formatDate = (dateString) =>
+    new Date(dateString).toISOString().split("T")[0]; // YYYY-MM-DD
   const formatTime = (timeString) => timeString || "Not Checked Out"; // แสดงเวลา หรือ ข้อความแจ้งเตือน
 
   return (
     <div className="flex flex-col items-center justify-center p-5">
       <h2 className="text-lg font-bold mb-4">Check-in Report</h2>
 
-      <div className="flex space-x-4 mb-4">
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="border p-2 text-sm rounded"
-        />
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="border p-2 text-sm rounded"
-        />
-        <button onClick={getOwnData} className="bg-blue-500 text-white px-4 py-2 rounded">
+      <div className="flex space-x-4 mb-4 items-end">
+        <div className="flex flex-col gap-2 ">
+          <span className="text-lg">Start Date</span>{" "}
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="border p-2 text-sm rounded"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 ">
+          <span className="text-lg">Start Date</span>{" "}
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="border p-2 text-sm rounded"
+          />
+        </div>
+
+        <button
+          onClick={getOwnData}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
           Filter
         </button>
       </div>
@@ -77,16 +91,25 @@ export default function Report() {
           {data.length > 0 ? (
             data.map((entry) => (
               <tr key={entry.checkin_id} className="text-center">
-                <td className="border border-gray-300 p-2">{formatDate(entry.date)}</td>
-                <td className="border border-gray-300 p-2">{formatTime(entry.checkin_time)}</td>
-                <td className="border border-gray-300 p-2">{formatTime(entry.checkout_time)}</td>
-                <td className="border border-gray-300 p-2">{formatTime(entry.time_difference)}</td>
-
+                <td className="border border-gray-300 p-2">
+                  {formatDate(entry.date)}
+                </td>
+                <td className="border border-gray-300 p-2">
+                  {formatTime(entry.checkin_time)}
+                </td>
+                <td className="border border-gray-300 p-2">
+                  {formatTime(entry.checkout_time)}
+                </td>
+                <td className="border border-gray-300 p-2">
+                  {formatTime(entry.time_difference)}
+                </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="3" className="text-center p-4 text-gray-500">No records found.</td>
+              <td colSpan="3" className="text-center p-4 text-gray-500">
+                No records found.
+              </td>
             </tr>
           )}
         </tbody>
