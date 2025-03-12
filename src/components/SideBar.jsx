@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); 
   const [isOpen, setIsOpen] = useState(false); // สถานะเปิด-ปิด Sidebar
 
   if (!user) return null;
@@ -12,7 +12,7 @@ export default function Sidebar() {
 
   const menuItems = [
     { path: "/", label: "Home", roles: ["user", "admin"] },
-    { path: "/report", label: "Report", roles: ["user","admin"] },
+    { path: "/report", label: "Report", roles: ["user", "admin"] },
     { path: "/reportAll", label: "Report User", roles: ["admin"] },
   ];
 
@@ -26,28 +26,37 @@ export default function Sidebar() {
       </button>
 
       <aside
-        className={`fixed top-0 left-0 h-full md:h-screen w-64 bg-gray-800 text-white p-5 transform transition-transform duration-300 z-50 ${
+        className={`fixed top-0 left-0 h-full md:h-screen w-64 bg-gray-800 text-white p-5 flex flex-col justify-between transform transition-transform duration-300 z-50 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0`}
       >
-        <h2 className="text-xl font-bold mb-5">GROUPMAKER</h2>
-        <ul>
-          {menuItems
-            .filter((item) =>
-              item.roles.some((role) => userRoles.includes(role))
-            )
-            .map((item) => (
-              <li key={item.path} className="mb-3">
-                <Link
-                  to={item.path}
-                  className="hover:text-gray-400"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-        </ul>
+        <div>
+          <h2 className="text-xl font-bold mb-5">GROUPMAKER</h2>
+          <ul>
+            {menuItems
+              .filter((item) =>
+                item.roles.some((role) => userRoles.includes(role))
+              )
+              .map((item) => (
+                <li key={item.path} className="mb-3">
+                  <Link
+                    to={item.path}
+                    className="hover:text-gray-400"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
+          </ul>
+        </div>
+
+        <button
+          onClick={logout}
+          className="mt-5 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-md"
+        >
+          Logout
+        </button>
       </aside>
 
       {isOpen && (

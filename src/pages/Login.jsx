@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -19,9 +19,9 @@ export default function Login() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen w-full bg-gradient-to-br from-[#fa8500]   ">
-      <h2 className="text-5xl text-black tracking-widest font-bold mb-4">Login</h2>
-      <form className="w-80 bg-white p-6 shadow-md rounded-md" onSubmit={handleLogin}>
+    <div className="flex flex-col justify-center items-center h-screen w-full bg-gray-800">
+      <h2 className="text-5xl text-white tracking-widest font-bold mb-4">Login</h2>
+      <form className="w-80 bg-white mt-10 p-6 shadow-md rounded-md" onSubmit={handleLogin}>
         <input 
           className="border p-2 w-full my-2 rounded-md" 
           placeholder="Email" 
@@ -35,9 +35,13 @@ export default function Login() {
           value={password} 
           onChange={(e) => setPassword(e.target.value)} 
         />
-        <button className="bg-black text-white p-2  w-full rounded-md ">Login</button>
+        <button className="bg-black text-white p-2 w-full rounded-md">Login</button>
       </form>
+
+      <p className="text-white mt-4">
+        ไม่มีบัญชี?{" "}
+        <Link to="/register" className="text-blue-400 underline">สมัครสมาชิก</Link>
+      </p>
     </div>
   );
-  
 }

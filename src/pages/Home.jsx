@@ -159,8 +159,8 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen w-full">
-      <span className="text-lg text-orange-400 font-semibold">
-        GROUPMAKER WORKTIME REGISTER
+      <span className="text-xl text-orange-400 font-semibold">
+        GROUP MAKER WORKTIME REGISTER
       </span>
       <div className="flex mt-10 space-x-5 w-full">
         <button

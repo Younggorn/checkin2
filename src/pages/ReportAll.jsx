@@ -30,30 +30,29 @@ export default function ReportAll() {
       console.error("Error fetching employees:", error);
     }
   };
-
-  // ✅ ดึงข้อมูล Check-in ของพนักงานที่เลือก
   const getUserData = async () => {
-    if (!selectedUserId) return; // ถ้ายังไม่ได้เลือกพนักงาน ไม่ต้องดึงข้อมูล
-
+    if (!selectedUserId) return;
+  
     try {
-      const apiUrl = `${
-        import.meta.env.VITE_API_URL
-      }/api/v1/user/getUserCheckingData`;
-
+      const apiUrl = `${import.meta.env.VITE_API_URL}/api/v1/user/getUserCheckingData`;
+  
       const response = await axios.post(
         apiUrl,
         {
-          user_id: selectedUserId,
-          page,
-          limit,
+          user_id: selectedUserId, 
+          page,  
+          limit, 
           startDate: startDate || undefined,
           endDate: endDate || undefined,
         },
         {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
         }
       );
-
+  
       if (response.data.status === "success") {
         setData(response.data.data);
         setTotalPages(response.data.totalPages);
@@ -62,6 +61,7 @@ export default function ReportAll() {
       console.error("Error fetching report data:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchEmployees();
@@ -71,7 +71,8 @@ export default function ReportAll() {
     if (selectedUserId) {
       getUserData();
     }
-  }, [selectedUserId, page, startDate, endDate]);
+  }, [selectedUserId, startDate, endDate, page]); 
+  
 
   const formatDate = (dateString) =>
     new Date(dateString).toISOString().split("T")[0]; // YYYY-MM-DD

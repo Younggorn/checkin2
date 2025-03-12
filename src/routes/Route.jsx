@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext";
 import Report from "../pages/Report";
 import Layout from "../layout/layout";
 import ReportAll from "../pages/ReportAll";
+import Register from "../pages/Register";
 
 export default function AppRoutes() {
   const { user, loading } = useAuth();
@@ -21,6 +22,8 @@ export default function AppRoutes() {
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
 
         <Route element={user ? <Layout /> : <Navigate to="/login" replace />}>
           <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
