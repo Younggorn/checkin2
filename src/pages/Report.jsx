@@ -70,6 +70,7 @@ export default function Report() {
             <th className="border border-gray-300 p-2">Date</th>
             <th className="border border-gray-300 p-2">Check-in Time</th>
             <th className="border border-gray-300 p-2">Check-out Time</th>
+            <th className="border border-gray-300 p-2">Diff Time</th>
           </tr>
         </thead>
         <tbody>
@@ -79,6 +80,8 @@ export default function Report() {
                 <td className="border border-gray-300 p-2">{formatDate(entry.date)}</td>
                 <td className="border border-gray-300 p-2">{formatTime(entry.checkin_time)}</td>
                 <td className="border border-gray-300 p-2">{formatTime(entry.checkout_time)}</td>
+                <td className="border border-gray-300 p-2">{formatTime(entry.time_difference)}</td>
+
               </tr>
             ))
           ) : (
