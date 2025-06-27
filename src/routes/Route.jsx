@@ -12,6 +12,10 @@ import Report from "../pages/Report";
 import Layout from "../layout/layout";
 import ReportAll from "../pages/ReportAll";
 import Register from "../pages/Register";
+import CheckinOutsize from "../pages/CheckinOutsize";
+import OT from "../pages/OT";
+import MyOT from "../pages/MyOT";
+import Approve from "../pages/Approve";
 
 export default function AppRoutes() {
   const { user, loading } = useAuth();
@@ -33,9 +37,27 @@ export default function AppRoutes() {
           <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
             <Route path="/report" element={<Report />} />
           </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+            <Route path="/checkinOutsize" element={<CheckinOutsize />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+            <Route path="/OT" element={<OT />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+            <Route path="/MyOT" element={<MyOT />} />
+          </Route>
+
           <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
             <Route path="/reportAll" element={<ReportAll />} />
           </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
+            <Route path="/Approve" element={<Approve />} />
+          </Route>
+          
         </Route>
       </Routes>
     </Router>

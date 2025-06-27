@@ -14,6 +14,7 @@ export default function Sidebar() {
     { path: "/", label: "Home", roles: ["user", "admin"] },
     { path: "/report", label: "Report", roles: ["user", "admin"] },
     { path: "/reportAll", label: "Report User", roles: ["admin"] },
+    { path: "/Approve", label: "Approve", roles: ["admin"] },
   ];
 
   return (

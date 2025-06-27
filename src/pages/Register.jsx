@@ -10,41 +10,42 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/register`, {
-        firstname,
-        lastname,
-        email,
-        password,
-      });
+const handleRegister = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/user/register`, {
+      firstname,
+      lastname,
+      email,
+      password,
+    });
 
-      if (response.data.status === "success") {
-        Swal.fire({
-          icon: "success",
-          title: "สมัครสมาชิกสำเร็จ!",
-          text: "คุณสามารถเข้าสู่ระบบได้ทันที",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-        setTimeout(() => navigate("/login"), 2000); // ✅ รอแล้วเด้งไป Login
-      } else {
-        Swal.fire({
-          icon: "error",
-          title: "สมัครสมาชิกไม่สำเร็จ!",
-          text: response.data.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
-        });
-      }
-    } catch (error) {
-      console.error("Register Error:", error);
+    if (response.data.status === "success") {
+      Swal.fire({
+        icon: "success",
+        title: "สมัครสมาชิกสำเร็จ!",
+        text: "คุณสามารถเข้าสู่ระบบได้ทันที",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      setTimeout(() => navigate("/login"), 2000);
+    } else {
       Swal.fire({
         icon: "error",
-        title: "เกิดข้อผิดพลาด!",
-        text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
+        title: "สมัครสมาชิกไม่สำเร็จ!",
+        text: response.data.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
       });
     }
-  };
+  } catch (error) {
+    console.error("Register Error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "เกิดข้อผิดพลาด!",
+      text: error.response?.data?.message || "เกิดข้อผิดพลาด กรุณาลองใหม่",
+    });
+  }
+};
+
 
   return (
     <div className="flex flex-col justify-center items-center h-screen w-full bg-gray-800">
