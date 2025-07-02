@@ -92,7 +92,7 @@ const Approve = () => {
         return;
       }
       
-      const response = await fetch('http://localhost:8000/api/v1/user/getAllOTRequests', {
+      const response = await fetch('${VITE_API_URL}/api/v1/user/getAllOTRequests', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -186,7 +186,7 @@ const Approve = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:8000/api/v1/user/approveOTRequest`, {
+      const response = await fetch(`${VITE_API_URL}/api/v1/user/approveOTRequest`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

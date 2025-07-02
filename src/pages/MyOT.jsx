@@ -21,7 +21,7 @@ const MyOT = () => {
       // สมมติว่าเราได้ user_id มาจากไหนสักที่ เช่น localStorage หรือ decode token
       const userId = localStorage.getItem('user_id') || 'USE-20250624-0000004'; // ใส่ user_id ที่ต้องการ
       
-      const response = await fetch(`http://localhost:8000/api/v1/user/getRejectOTT/${userId}`, {
+      const response = await fetch(`${VITE_API_URL}/api/v1/user/getRejectOTT/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -52,7 +52,7 @@ const MyOT = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const response = await fetch('http://localhost:8000/api/v1/user/getMyOTRequests', {
+      const response = await fetch('${VITE_API_URL}/api/v1/user/getMyOTRequests', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -107,7 +107,7 @@ const MyOT = () => {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch(`http://localhost:8000/api/v1/user/deleteOT/${otId}`, {
+      const response = await fetch(`${VITE_API_URL}/api/v1/user/deleteOT/${otId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`

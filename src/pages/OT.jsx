@@ -22,7 +22,7 @@ const OT = () => {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:8000/api/v1/Admin/getuser', {
+        const response = await fetch('${VITE_API_URL}/api/v1/Admin/getuser', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -235,7 +235,7 @@ const OT = () => {
       });
 
       const response = await fetch(
-        "http://localhost:8000/api/v1/user/ot-request",
+        "${VITE_API_URL}/api/v1/user/ot-request",
         {
           method: "POST",
           headers: {
