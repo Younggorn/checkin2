@@ -4,12 +4,46 @@ const MyOT = () => {
   const [otRequests, setOtRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [rejectedReasons, setRejectedReasons] = useState({});
 
   // สถานะและสีที่ใช้แสดงผล
   const statusConfig = {
     0: { text: 'รออนุมัติ', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
     1: { text: 'อนุมัติแล้ว', color: 'bg-green-100 text-green-800', icon: '✅' },
     2: { text: 'ไม่อนุมัติ', color: 'bg-red-100 text-red-800', icon: '❌' }
+  };
+
+  // ดึงข้อมูลเหตุผลที่ไม่อนุมัติ
+  const fetchRejectedReasons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // สมมติว่าเราได้ user_id มาจากไหนสักที่ เช่น localStorage หรือ decode token
+      const userId = localStorage.getItem('user_id') || 'USE-20250624-0000004'; // ใส่ user_id ที่ต้องการ
+      
+      const response = await fetch(`http://localhost:8000/api/v1/user/getRejectOTT/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        if (Array.isArray(result)) {
+          // แปลงข้อมูลเป็น object เพื่อใช้ ot_id เป็น key
+          const reasonsMap = {};
+          result.forEach(item => {
+            reasonsMap[item.ot_id] = item.reason_reject;
+          });
+          setRejectedReasons(reasonsMap);
+        }
+      }
+    } catch (err) {
+      console.error('Error fetching rejected reasons:', err);
+    }
   };
 
   // ดึงข้อมูล OT จาก API
@@ -30,6 +64,8 @@ const MyOT = () => {
       
       if (result.success) {
         setOtRequests(result.data);
+        // ดึงข้อมูลเหตุผลที่ไม่อนุมัติหลังจากได้ข้อมูล OT แล้ว
+        await fetchRejectedReasons();
       } else {
         setError(result.message || 'ไม่สามารถดึงข้อมูล OT ได้');
       }
@@ -195,7 +231,7 @@ const MyOT = () => {
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{statusConfig[ot.status]?.icon}</span>
                   <div>
-                    <h3 className="font-bold text-gray-800"></h3>
+               
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig[ot.status]?.color}`}>
                       {statusConfig[ot.status]?.text}
                     </span>
@@ -253,7 +289,7 @@ const MyOT = () => {
               </div>
 
               {/* Reason */}
-              <div>
+              <div className="mb-4">
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-1 mb-2">
                   <span>📝</span> เหตุผล
                 </label>
@@ -262,11 +298,23 @@ const MyOT = () => {
                 </div>
               </div>
 
+              {/* Rejection Reason (เฉพาะที่ไม่อนุมัติ) */}
+              {ot.status === 2 && rejectedReasons[ot.ot_id] && (
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-red-600 flex items-center gap-1 mb-2">
+                    <span>❌</span> เหตุผลที่ไม่อนุมัติ
+                  </label>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800">
+                    {rejectedReasons[ot.ot_id]}
+                  </div>
+                </div>
+              )}
+
               {/* Approved by (ถ้ามี) */}
               {ot.approved_by_name && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200">
                   <label className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                    <span>👤</span> อนุมัติโดย
+                    <span>👤</span> {ot.status === 1 ? 'อนุมัติโดย' : 'ปฏิเสธโดย'}
                   </label>
                   <div className="text-gray-800 font-medium">
                     {ot.approved_by_name}

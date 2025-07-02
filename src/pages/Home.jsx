@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+//import { checkin } from "../../../worktime-server/controllers/System/system.controller";
 
 export default function Home() {
   const { user } = useAuth();
@@ -16,12 +17,16 @@ export default function Home() {
   const [checkinStatus, setCheckinStatus] = useState({
     checkedIn: false,
     checkedOut: false,
-    checkin_time: null
+    checkin_time: null,
   });
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
-  const [workTime, setWorkTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [workTime, setWorkTime] = useState({
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
   const [checkinTime, setCheckinTime] = useState(null);
-  const [canTakeBreak, setCanTakeBreak] = useState(false);
+  const [cameraMode, setCameraMode] = useState(null);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -38,35 +43,24 @@ export default function Home() {
   // คำนวณเวลาทำงาน
   const calculateWorkTime = (checkinTime) => {
     if (!checkinTime) return { hours: 0, minutes: 0, seconds: 0 };
-    
+
     const now = new Date();
     const checkin = new Date(checkinTime);
-    
+
     if (isNaN(checkin.getTime())) {
       return { hours: 0, minutes: 0, seconds: 0 };
     }
-    
+
     const diffMs = now - checkin;
     if (diffMs < 0) {
       return { hours: 0, minutes: 0, seconds: 0 };
     }
-    
+
     const hours = Math.floor(diffMs / (1000 * 60 * 60));
     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-    
-    return { hours, minutes, seconds };
-  };
 
-  // ตรวจสอบว่าสามารถ break ได้หรือไม่ (9 ชั่วโมงหลัง checkin)
-  const checkBreakEligibility = (checkinTime) => {
-    if (!checkinTime) return false;
-    
-    const now = new Date();
-    const checkin = new Date(checkinTime);
-    const diffHours = (now - checkin) / (1000 * 60 * 60);
-    
-    return diffHours >= 9;
+    return { hours, minutes, seconds };
   };
 
   // ฟังก์ชันดึงเวลา checkin จาก API ใหม่
@@ -84,7 +78,7 @@ export default function Home() {
       if (response.ok) {
         const result = await response.json();
         console.log("Fetched checkin time:", result.data);
-        
+
         if (result.data.checkin_time && !result.data.checkout_time) {
           // มี checkin_time และยัง checkout ไม่ได้
           setCheckinTime(result.data.checkin_time);
@@ -106,15 +100,11 @@ export default function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-      
+
       // อัพเดทเวลาทำงานทุกวินาที ถ้า checkin แล้ว
       if (checkinTime) {
         const workTimeCalc = calculateWorkTime(checkinTime);
         setWorkTime(workTimeCalc);
-        
-        // ตรวจสอบว่าสามารถ break ได้หรือไม่
-        const canBreak = checkBreakEligibility(checkinTime);
-        setCanTakeBreak(canBreak);
       }
     }, 1000);
     return () => clearInterval(timer);
@@ -136,21 +126,17 @@ export default function Home() {
       if (response.ok) {
         const status = await response.json();
         setCheckinStatus(status);
-        
+
         // ถ้า checkin แล้วแต่ยัง checkout ไม่ได้ ให้ดึงเวลา checkin จาก API ใหม่
         if (status.checkedIn && !status.checkedOut) {
           const timeFromAPI = await fetchCheckinTime();
           if (timeFromAPI) {
             setCheckinTime(timeFromAPI);
             // คำนวณเวลาทำงานทันที
-            const workTimeCalc = calculateWorkTime(timeFromAPI);
-            setWorkTime(workTimeCalc);
-            setCanTakeBreak(checkBreakEligibility(timeFromAPI));
           }
         } else {
           setCheckinTime(null);
           setWorkTime({ hours: 0, minutes: 0, seconds: 0 });
-          setCanTakeBreak(false);
         }
       } else {
         console.error("Failed to fetch checkin status");
@@ -179,7 +165,7 @@ export default function Home() {
         type: "checkin",
         text: "CHECK IN",
         disabled: !isInOffice,
-        icon: "📹"
+        icon: "👉",
       };
     }
 
@@ -188,43 +174,14 @@ export default function Home() {
       return {
         type: "checkout",
         text: "CHECK OUT",
-        workTime: `${workTime.hours.toString().padStart(2, '0')}:${workTime.minutes.toString().padStart(2, '0')}:${workTime.seconds.toString().padStart(2, '0')}`,
-        disabled: false,
-        icon: "👋"
+        workTime: `${workTime.hours
+          .toString()
+          .padStart(2, "0")}:${workTime.minutes
+          .toString()
+          .padStart(2, "0")}:${workTime.seconds.toString().padStart(2, "0")}`,
+        disabled: !isInOffice,
+        icon: "👋",
       };
-    }
-  };
-
-  // ฟังก์ชัน Take a Break
-  const takeBreak = async () => {
-    if (!canTakeBreak) {
-      Swal.fire({
-        icon: "warning",
-        title: "ยังไม่สามารถพักได้",
-        text: "ต้องทำงานครบ 9 ชั่วโมงก่อนจึงจะสามารถพักได้",
-      });
-      return;
-    }
-
-    const result = await Swal.fire({
-      title: "ต้องการพักงานหรือไม่?",
-      text: `คุณทำงานมาแล้ว ${workTime.hours} ชั่วโมง ${workTime.minutes} นาที`,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "ใช่, ต้องการพัก",
-      cancelButtonText: "ยกเลิก"
-    });
-
-    if (result.isConfirmed) {
-      Swal.fire({
-        icon: "success",
-        title: "พักงานสำเร็จ!",
-        text: "หวังว่าจะได้พักผ่อนอย่างมีความสุข",
-        timer: 2000,
-        showConfirmButton: false,
-      });
     }
   };
 
@@ -335,13 +292,14 @@ export default function Home() {
     }
   };
 
-  const openCamera = async () => {
+  const openCamera = async (mode = "checkin") => {
     setIsCheckingLocation(true);
+    setCameraMode(mode);
 
     try {
       const locationResult = await getCurrentLocation();
 
-      if (!locationResult.isInOffice) {
+      if (mode === "checkin" && !locationResult.isInOffice) {
         Swal.fire({
           icon: "error",
           title: "ไม่สามารถเช็คอินได้",
@@ -383,7 +341,7 @@ export default function Home() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
-    const newWidth = 200;
+    const newWidth = 640;
     const newHeight = (video.videoHeight / video.videoWidth) * newWidth;
 
     canvas.width = newWidth;
@@ -416,13 +374,11 @@ export default function Home() {
     const formData = new FormData();
 
     formData.append("photo", dataURItoBlob(image));
-    formData.append("userId", user?.userid);
+  
 
-    if (currentLocation) {
-      formData.append("latitude", currentLocation.lat.toString());
-      formData.append("longitude", currentLocation.lng.toString());
-      formData.append("accuracy", currentLocation.accuracy.toString());
-      formData.append("address", address);
+
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
     }
 
     try {
@@ -444,7 +400,7 @@ export default function Home() {
           timer: 2000,
           showConfirmButton: false,
         });
-        
+
         // รีเฟรชสถานะหลังจาก checkin สำเร็จ
         await fetchCheckinStatus();
         closePopup();
@@ -477,24 +433,21 @@ export default function Home() {
   };
 
   const checkOut = async () => {
-    const apiUrl = `${import.meta.env.VITE_API_URL}/api/v1/user/checkout`;
-    const payload = { userId: user?.userid };
 
-    if (currentLocation) {
-      payload.latitude = currentLocation.lat;
-      payload.longitude = currentLocation.lng;
-      payload.accuracy = currentLocation.accuracy;
-      payload.address = address;
-    }
+    
+    const apiUrl = `${import.meta.env.VITE_API_URL}/api/v1/user/checkout`;
+    const formData = new FormData();
+
+    formData.append("checkout_photo", dataURItoBlob(image));
+    
 
     try {
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: formData,
       });
       const result = await response.json();
 
@@ -506,14 +459,14 @@ export default function Home() {
           timer: 3000,
           showConfirmButton: false,
         });
-        
+
         // รีเซ็ตเวลา
         setCheckinTime(null);
         setWorkTime({ hours: 0, minutes: 0, seconds: 0 });
-        setCanTakeBreak(false);
-        
+
         // รีเฟรชสถานะหลังจาก checkout สำเร็จ
         await fetchCheckinStatus();
+        closePopup();
       } else {
         Swal.fire({
           icon: "error",
@@ -538,6 +491,7 @@ export default function Home() {
     }
     setIsOpen(false);
     setImage(null);
+    setCameraMode(null);
   };
 
   useEffect(() => {
@@ -562,8 +516,6 @@ export default function Home() {
   };
 
   const buttonStatus = getButtonStatus();
-
-  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
@@ -590,19 +542,22 @@ export default function Home() {
               {formatTime(currentTime)}
             </h2>
             <p className="text-sm text-gray-600">{formatDate(currentTime)}</p>
-            
+
             {/* Display work time if checked in */}
-            {checkinStatus.checkedIn && !checkinStatus.checkedOut && checkinTime && (
-              <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                <p className="text-sm text-green-600 font-medium">คุณทำงานมาแล้ว</p>
-                <p className="text-2xl font-bold text-green-800">
-                  {workTime.hours.toString().padStart(2, '0')}:
-                  {workTime.minutes.toString().padStart(2, '0')}:
-                  {workTime.seconds.toString().padStart(2, '0')}
-                   
-                </p>
-              </div>
-            )}
+            {checkinStatus.checkedIn &&
+              !checkinStatus.checkedOut &&
+              checkinTime && (
+                <div className="mt-4 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <p className="text-sm text-green-600 font-medium">
+                    คุณทำงานมาแล้ว
+                  </p>
+                  <p className="text-2xl font-bold text-green-800">
+                    {workTime.hours.toString().padStart(2, "0")}:
+                    {workTime.minutes.toString().padStart(2, "0")}:
+                    {workTime.seconds.toString().padStart(2, "0")}
+                  </p>
+                </div>
+              )}
           </div>
         </div>
 
@@ -670,25 +625,10 @@ export default function Home() {
                 : "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
             } text-white`}
             onClick={
-              buttonStatus?.type === "checkout" 
-                ? () => {
-                    Swal.fire({
-                      title: 'ยืนยันการเลิกงาน',
-                      text: 'คุณต้องการเลิกงานใช่หรือไม่?',
-                      icon: 'question',
-                      showCancelButton: true,
-                      confirmButtonColor: '#ef4444',
-                      cancelButtonColor: '#6b7280',
-                      confirmButtonText: 'เลิกงาน',
-                      cancelButtonText: 'ยกเลิก'
-                    }).then((result) => {
-                      if (result.isConfirmed) {
-                        checkOut();
-                      }
-                    });
-                  }
-                : buttonStatus?.type === "checkin" 
-                ? openCamera 
+              buttonStatus?.type === "checkout"
+                ? () => openCamera("checkout")
+                : buttonStatus?.type === "checkin"
+                ? () => openCamera("checkin")
                 : undefined
             }
             disabled={isCheckingLocation || buttonStatus?.disabled}
@@ -705,7 +645,7 @@ export default function Home() {
                 </span>
                 <div className="flex flex-col">
                   <span>{buttonStatus?.text || "กำลังโหลด..."}</span>
-                 
+
                   {buttonStatus?.type === "checkin" && !isInOffice && (
                     <span className="text-sm font-normal opacity-75">
                       ต้องอยู่ในบริษัทก่อน
@@ -715,27 +655,25 @@ export default function Home() {
               </div>
             )}
           </button>
-          <Link 
-      to="/OT"
-      className="w-full h-24 rounded-2xl font-bold text-xl bg-amber-300
+          <Link
+            to="/OT"
+            className="w-full h-24 rounded-2xl font-bold text-xl bg-amber-300
                  inline-flex items-center justify-center
                  text-black no-underline
                  hover:bg-amber-400 active:bg-amber-500
                  transition-colors duration-200"
-      style={{
-        // เพิ่ม style เพื่อให้เหมือน button
-        border: 'none',
-        outline: 'none',
-        textDecoration: 'none',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      📝 ส่งเรื่อง OT
-    </Link>
-
-         
+            style={{
+              // เพิ่ม style เพื่อให้เหมือน button
+              border: "none",
+              outline: "none",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            📝 ส่งเรื่อง OT
+          </Link>
         </div>
 
         {/* Help Text */}
@@ -758,7 +696,7 @@ export default function Home() {
             <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-bold flex items-center">
-                  📹 CHECK IN
+                  {cameraMode === "checkout" ? "👋 CHECK OUT" : "👉 CHECK IN"}
                 </h2>
                 <button
                   onClick={closePopup}
@@ -772,15 +710,27 @@ export default function Home() {
             <div className="p-4">
               <div
                 className={`w-full p-3 rounded-lg mb-4 text-center ${
-                  isInOffice
-                    ? "bg-green-50 text-green-700 border border-green-200"
-                    : "bg-red-50 text-red-700 border border-red-200"
+                  cameraMode === "checkin"
+                    ? isInOffice
+                      ? "bg-green-50 text-green-700 border border-green-200"
+                      : "bg-red-50 text-red-700 border border-red-200"
+                    : "bg-blue-50 text-blue-700 border border-blue-200"
                 }`}
               >
                 <div className="flex items-center justify-center gap-2">
-                  <span className="text-lg">{isInOffice ? "✅" : "❌"}</span>
+                  <span className="text-lg">
+                    {cameraMode === "checkout"
+                      ? "👋"
+                      : isInOffice
+                      ? "✅"
+                      : "❌"}
+                  </span>
                   <span className="font-medium">
-                    {isInOffice ? "อยู่ในบริษัท" : "อยู่นอกบริษัท"}
+                    {cameraMode === "checkout"
+                      ? "กำลังเลิกงาน"
+                      : isInOffice
+                      ? "อยู่ในบริษัท"
+                      : "อยู่นอกบริษัท"}
                   </span>
                   <span className="text-sm opacity-75">({distance}m)</span>
                 </div>
@@ -824,16 +774,22 @@ export default function Home() {
                     </button>
                   ) : (
                     <button
-                      onClick={checkIn}
-                      disabled={!isInOffice}
+                      onClick={cameraMode === "checkout" ? checkOut : checkIn}
+                      disabled={cameraMode === "checkin" && !isInOffice}
                       className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all active:scale-95 flex items-center justify-center ${
-                        !isInOffice
+                        cameraMode === "checkin" && !isInOffice
                           ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : cameraMode === "checkout"
+                          ? "bg-red-500 hover:bg-red-600 text-white"
                           : "bg-green-500 hover:bg-green-600 text-white"
                       }`}
                     >
-                      <span className="mr-2">✅</span>
-                      ยืนยันเช็คอิน
+                      <span className="mr-2">
+                        {cameraMode === "checkout" ? "👋" : "✅"}
+                      </span>
+                      {cameraMode === "checkout"
+                        ? "ยืนยันเลิกงาน"
+                        : "ยืนยันเช็คอิน"}
                     </button>
                   )}
 

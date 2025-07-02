@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 const Approve = () => {
   const [otRequests, setOtRequests] = useState([]);
   const [employees, setEmployees] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processingOT, setProcessingOT] = useState(null);
-  const [activeTab, setActiveTab] = useState(0); // 0=รออนุมัติ, 1=อนุมัติแล้ว, 2=ไม่อนุมัติ
+  const [activeTab, setActiveTab] = useState(0); // 0=รอรับรอง, 1=รับรองแล้ว, 2=ไม่รับรอง
+  const [rejectedReasons, setRejectedReasons] = useState({}); // เก็บเหตุผลที่ไม่รับรอง
   
-  // State สำหรับ Modal ไม่อนุมัติ
+  // State สำหรับ Modal ไม่รับรอง
   const [rejectModal, setRejectModal] = useState({
     isOpen: false,
     otId: null,
@@ -23,14 +25,39 @@ const Approve = () => {
   useEffect(() => {
     if (selectedUserId) {
       fetchAllOTRequests();
+      fetchRejectedReasons();
     }
   }, [selectedUserId]);
 
   // สถานะและสีที่ใช้แสดงผล
   const statusConfig = {
-    0: { text: 'รออนุมัติ', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
-    1: { text: 'อนุมัติแล้ว', color: 'bg-green-100 text-green-800', icon: '✅' },
-    2: { text: 'ไม่อนุมัติ', color: 'bg-red-100 text-red-800', icon: '❌' }
+    0: { text: 'รอรับรอง', color: 'bg-yellow-100 text-yellow-800', icon: '⏳' },
+    1: { text: 'รับรองแล้ว', color: 'bg-green-100 text-green-800', icon: '✅' },
+    2: { text: 'ไม่รับรอง', color: 'bg-red-100 text-red-800', icon: '❌' }
+  };
+
+  // ✅ ใช้ API ใหม่ getOTStatus2 สำหรับดึงเหตุผลที่ไม่รับรอง
+  const fetchRejectedReasons = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/Admin/getOTStatus2`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          const reasonsMap = {};
+          result.data.forEach(item => {
+            // ใช้ field ใหม่ตาม API
+            reasonsMap[item.ot_id] = item.reason_reject;
+          });
+          setRejectedReasons(reasonsMap);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching rejected reasons:", error);
+    }
   };
 
   // ดึงข้อมูลพนักงานทั้งหมด
@@ -138,86 +165,159 @@ const Approve = () => {
     });
   };
 
-  // อนุมัติ OT
-  // แก้ไขใน component
-const handleApprove = async (otId) => {
-  if (!confirm('คุณต้องการอนุมัติ OT นี้หรือไม่?')) return;
-
-  setProcessingOT(otId);
-  
-  try {
-    const token = localStorage.getItem('token');
-    
-    // ✅ ใช้ otId ใน URL path แทน body
-    const response = await fetch(`http://localhost:8000/api/v1/user/approveOTRequest`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        status: 1,
-        otId: otId
-      })
+  // รับรอง OT - ใช้ SweetAlert2
+  const handleApprove = async (otId) => {
+    const result = await Swal.fire({
+      title: 'ยืนยันการรับรอง',
+      text: 'คุณต้องการรับรอง OT นี้หรือไม่?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'ใช่, รับรอง',
+      cancelButtonText: 'ยกเลิก',
+      reverseButtons: true
     });
 
-    const result = await response.json();
+    if (!result.isConfirmed) return;
+
+    setProcessingOT(otId);
     
-    if (result.success) {
-      alert('อนุมัติ OT สำเร็จ!');
-      fetchAllOTRequests();
-    } else {
-      alert(result.message || 'ไม่สามารถอนุมัติ OT ได้');
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`http://localhost:8000/api/v1/user/approveOTRequest`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          status: 1,
+          otId: otId
+        })
+      });
+
+      const apiResult = await response.json();
+      
+      if (apiResult.success) {
+        await Swal.fire({
+          title: 'สำเร็จ!',
+          text: 'รับรอง OT เรียบร้อยแล้ว',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          timer: 2000,
+          timerProgressBar: true
+        });
+        
+        fetchAllOTRequests();
+        fetchRejectedReasons();
+      } else {
+        await Swal.fire({
+          title: 'เกิดข้อผิดพลาด!',
+          text: apiResult.message || 'ไม่สามารถรับรอง OT ได้',
+          icon: 'error',
+          confirmButtonColor: '#ef4444'
+        });
+      }
+    } catch (err) {
+      console.error('Error approving OT:', err);
+      await Swal.fire({
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'เกิดข้อผิดพลาดในการรับรอง OT',
+        icon: 'error',
+        confirmButtonColor: '#ef4444'
+      });
+    } finally {
+      setProcessingOT(null);
     }
-  } catch (err) {
-    console.error('Error approving OT:', err);
-    alert('เกิดข้อผิดพลาดในการอนุมัติ OT');
-  } finally {
-    setProcessingOT(null);
-  }
-};
+  };
 
-// แก้ไข handleReject เช่นกัน
-const handleReject = async () => {
-  if (!rejectModal.reason.trim()) {
-    alert('กรุณาระบุเหตุผลในการไม่อนุมัติ');
-    return;
-  }
-
-  setProcessingOT(rejectModal.otId);
-  
-  try {
-    const token = localStorage.getItem('token');
-    
-    // ✅ ใช้ otId ใน URL path
-    const response = await fetch(`http://localhost:8000/api/v1/user/approveOTRequest/${rejectModal.otId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+  // เปิด Modal ไม่รับรอง - ใช้ SweetAlert2
+  const openRejectModal = async (otId) => {
+    const { value: reason, isConfirmed } = await Swal.fire({
+      title: 'ไม่รับรอง OT',
+      text: 'กรุณาระบุเหตุผลในการไม่รับรอง',
+      input: 'textarea',
+      inputAttributes: {
+        placeholder: 'เช่น ไม่จำเป็นต้องทำ OT ในช่วงเวลานี้...',
+        maxlength: 200,
+        rows: 4
       },
-      body: JSON.stringify({
-        status: 2,
-        reject_reason: rejectModal.reason
-      })
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'ยืนยันไม่รับรอง',
+      cancelButtonText: 'ยกเลิก',
+      reverseButtons: true,
+      inputValidator: (value) => {
+        if (!value || value.trim().length === 0) {
+          return 'กรุณาระบุเหตุผลในการไม่รับรอง';
+        }
+        if (value.trim().length < 5) {
+          return 'เหตุผลต้องมีอย่างน้อย 5 ตัวอักษร';
+        }
+        return null;
+      }
     });
 
-    const result = await response.json();
-    
-    if (result.success) {
-      alert('ไม่อนุมัติ OT สำเร็จ!');
-      closeRejectModal();
-      fetchAllOTRequests();
-    } else {
-      alert(result.message || 'ไม่สามารถไม่อนุมัติ OT ได้');
+    if (isConfirmed && reason) {
+      await handleReject(otId, reason.trim());
     }
-  } catch (err) {
-    console.error('Error rejecting OT:', err);
-    alert('เกิดข้อผิดพลาดในการไม่อนุมัติ OT');
-  } finally {
-    setProcessingOT(null);
-  }
-};
+  };
+
+  // ไม่รับรอง OT - ใช้ SweetAlert2
+  const handleReject = async (otId, reason) => {
+    setProcessingOT(otId);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/Admin/rejectOT/${otId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason_reject: reason
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        await Swal.fire({
+          title: 'สำเร็จ!',
+          text: 'ไม่รับรอง OT เรียบร้อยแล้ว',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          timer: 2000,
+          timerProgressBar: true
+        });
+        
+        fetchAllOTRequests();
+        fetchRejectedReasons();
+      } else {
+        await Swal.fire({
+          title: 'เกิดข้อผิดพลาด!',
+          text: result.message || 'ไม่สามารถไม่รับรอง OT ได้',
+          icon: 'error',
+          confirmButtonColor: '#ef4444'
+        });
+      }
+    } catch (err) {
+      console.error('Error rejecting OT:', err);
+      await Swal.fire({
+        title: 'เกิดข้อผิดพลาด!',
+        text: 'เกิดข้อผิดพลาดในการไม่รับรอง OT',
+        icon: 'error',
+        confirmButtonColor: '#ef4444'
+      });
+    } finally {
+      setProcessingOT(null);
+    }
+  };
 
   // ได้พนักงานที่เลือก
   const getSelectedEmployee = () => {
@@ -264,8 +364,8 @@ const handleReject = async () => {
             <span className="text-2xl">👨‍💼</span>
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">อนุมัติ OT</h1>
-            <p className="text-gray-600">จัดการการร้องขอ OT ทั้งหมด</p>
+            <h1 className="text-2xl font-bold text-gray-800">รับรอง OT</h1>
+           
           </div>
         </div>
       </div>
@@ -282,10 +382,11 @@ const handleReject = async () => {
             setSelectedUserId(e.target.value);
             setOtRequests([]);
             setActiveTab(0);
+            setRejectedReasons({});
           }}
           className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
-          <option value="">-- เลือกพนักงาน --</option>
+          
           <option value="all">ทุกคน</option>
           {employees.map((emp) => (
             <option key={emp.user_id} value={emp.user_id}>
@@ -308,7 +409,7 @@ const handleReject = async () => {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                รออนุมัติ ({pendingOTs.length})
+                รอรับรอง ({pendingOTs.length})
               </button>
               <button 
                 onClick={() => setActiveTab(1)}
@@ -318,7 +419,7 @@ const handleReject = async () => {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                อนุมัติแล้ว ({approvedOTs.length})
+                รับรองแล้ว ({approvedOTs.length})
               </button>
               <button 
                 onClick={() => setActiveTab(2)}
@@ -328,7 +429,7 @@ const handleReject = async () => {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
               >
-                ไม่อนุมัติ ({rejectedOTs.length})
+                ไม่รับรอง ({rejectedOTs.length})
               </button>
             </div>
           </div>
@@ -438,7 +539,19 @@ const handleReject = async () => {
                         </div>
                       </div>
 
-                      {/* Action Buttons (เฉพาะรออนุมัติ) */}
+                      {/* ✅ แสดงเหตุผลที่ไม่รับรอง จาก API ใหม่ */}
+                      {ot.status === 2 && rejectedReasons[ot.ot_id] && (
+                        <div className="mb-4">
+                          <label className="text-sm font-medium text-red-600 flex items-center gap-1 mb-2">
+                            <span>❌</span> เหตุผลที่ไม่รับรอง
+                          </label>
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800">
+                            {rejectedReasons[ot.ot_id]}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action Buttons (เฉพาะรอรับรอง) */}
                       {ot.status === 0 && (
                         <div className="flex gap-3 pt-4 border-t border-gray-200">
                           <button
@@ -454,7 +567,7 @@ const handleReject = async () => {
                             ) : (
                               <>
                                 <span>✅</span>
-                                อนุมัติ
+                                รับรอง
                               </>
                             )}
                           </button>
@@ -465,7 +578,7 @@ const handleReject = async () => {
                             className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                           >
                             <span>❌</span>
-                            ไม่อนุมัติ
+                            ไม่รับรอง
                           </button>
                         </div>
                       )}
@@ -476,7 +589,7 @@ const handleReject = async () => {
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <label className="text-sm font-medium text-gray-600 flex items-center gap-1">
-                                <span>👨‍💼</span> {ot.status === 1 ? 'อนุมัติโดย' : 'ไม่อนุมัติโดย'}
+                                <span>👨‍💼</span> {ot.status === 1 ? 'รับรองโดย' : 'ไม่รับรองโดย'}
                               </label>
                               <div className="text-gray-800 font-medium">
                                 {ot.approved_by_name || 'ไม่ระบุ'}
@@ -484,25 +597,13 @@ const handleReject = async () => {
                             </div>
                             {ot.status === 1 && ot.updated_at && (
                               <div>
-                                <label className="text-sm font-medium text-gray-600">วันที่อนุมัติ</label>
+                                <label className="text-sm font-medium text-gray-600">วันที่รับรอง</label>
                                 <div className="text-gray-800 font-medium">
                                   {formatDate(ot.updated_at)} {formatTime(ot.updated_at)}
                                 </div>
                               </div>
                             )}
                           </div>
-                          
-                          {/* Reject Reason */}
-                          {ot.status === 2 && ot.reject_reason && (
-                            <div className="mt-3">
-                              <label className="text-sm font-medium text-gray-600 flex items-center gap-1 mb-2">
-                                <span>💬</span> เหตุผลที่ไม่อนุมัติ
-                              </label>
-                              <div className="bg-red-50 rounded-lg p-3 text-red-800 border border-red-200">
-                                {ot.reject_reason}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
@@ -515,7 +616,10 @@ const handleReject = async () => {
           {/* Refresh Button */}
           <div className="mt-6 text-center">
             <button
-              onClick={fetchAllOTRequests}
+              onClick={() => {
+                fetchAllOTRequests();
+                fetchRejectedReasons();
+              }}
               className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2 mx-auto"
             >
               <span>🔄</span>
@@ -535,71 +639,6 @@ const handleReject = async () => {
           <p className="text-gray-500">
             เริ่มต้นด้วยการเลือกพนักงานที่ต้องการดู OT
           </p>
-        </div>
-      )}
-
-      {/* Reject Modal */}
-      {rejectModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            {/* Modal Header */}
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                  <span className="text-lg">❌</span>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">ไม่อนุมัติ OT</h3>
-                  <p className="text-gray-600 text-sm">กรุณาระบุเหตุผลในการไม่อนุมัติ</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                เหตุผลที่ไม่อนุมัติ <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                value={rejectModal.reason}
-                onChange={(e) => setRejectModal(prev => ({
-                  ...prev,
-                  reason: e.target.value
-                }))}
-                placeholder="เช่น ไม่จำเป็นต้องทำ OT ในช่วงเวลานี้..."
-                className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                rows="4"
-                maxLength="500"
-              />
-              <div className="text-right text-sm text-gray-500 mt-1">
-                {rejectModal.reason.length}/500
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-6 border-t border-gray-200 flex gap-3">
-              <button
-                onClick={closeRejectModal}
-                className="flex-1 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
-              >
-                ยกเลิก
-              </button>
-              <button
-                onClick={handleReject}
-                disabled={!rejectModal.reason.trim() || processingOT === rejectModal.otId}
-                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {processingOT === rejectModal.otId ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    กำลังดำเนินการ...
-                  </>
-                ) : (
-                  'ยืนยันไม่อนุมัติ'
-                )}
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

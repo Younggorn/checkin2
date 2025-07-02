@@ -16,6 +16,8 @@ import CheckinOutsize from "../pages/CheckinOutsize";
 import OT from "../pages/OT";
 import MyOT from "../pages/MyOT";
 import Approve from "../pages/Approve";
+import CalculateSalary from "../pages/CalculateSalary"
+import ApproveByAdmin from "../pages/ApproveByAdmin";
 
 export default function AppRoutes() {
   const { user, loading } = useAuth();
@@ -56,6 +58,14 @@ export default function AppRoutes() {
 
           <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
             <Route path="/Approve" element={<Approve />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
+            <Route path="/CalculateSalary" element={<CalculateSalary />} />
+          </Route>
+
+          <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
+            <Route path="/ApproveByAdmin" element={<ApproveByAdmin />} />
           </Route>
           
         </Route>
