@@ -428,25 +428,21 @@ const ApproveByAdmin = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100">
-      {/* Header */}
+      {/* Header - ลดขนาด */}
       <div className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                <span className="text-2xl">👨‍💼</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">อนุมัติคำขอ OT</h1>
-              </div>
+        <div className="px-3 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-lg">👨‍💼</span>
             </div>
+            <h1 className="text-lg font-bold text-gray-900">อนุมัติคำขอ OT</h1>
           </div>
         </div>
       </div>
 
-      {/* Employee Selection Card */}
-      <div className="mx-4 mt-4 bg-white rounded-2xl shadow-lg p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-700 mb-3 flex items-center">
+      {/* Employee Selection Card - ลดขนาด */}
+      <div className="mx-3 mt-3 bg-white rounded-xl shadow-sm p-4 mb-4">
+        <h2 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
           👥 เลือกพนักงาน
         </h2>
         
@@ -457,7 +453,7 @@ const ApproveByAdmin = () => {
             setRequests([]);
             setActiveTab(1);
           }}
-          className="w-full p-3 border border-gray-200 rounded-lg bg-white text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full p-2.5 border border-gray-200 rounded-lg bg-white text-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="all">ทุกคน</option>
           {employees.map((emp) => (
@@ -470,12 +466,12 @@ const ApproveByAdmin = () => {
 
       {selectedUserId && (
         <>
-          {/* Filter Tabs */}
-          <div className="mx-4 bg-white rounded-2xl shadow-lg p-6 mb-6">
-            <div className="flex space-x-2 overflow-x-auto">
+          {/* Filter Tabs - ลดขนาดและปรับ responsive */}
+          <div className="mx-3 bg-white rounded-xl shadow-sm p-3 mb-4">
+            <div className="flex space-x-1 overflow-x-auto">
               <button 
                 onClick={() => setActiveTab(1)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap text-xs ${
                   activeTab === 1 
                     ? 'bg-yellow-500 text-white' 
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -485,7 +481,7 @@ const ApproveByAdmin = () => {
               </button>
               <button 
                 onClick={() => setActiveTab(3)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap text-xs ${
                   activeTab === 3 
                     ? 'bg-green-500 text-white' 
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -495,7 +491,7 @@ const ApproveByAdmin = () => {
               </button>
               <button 
                 onClick={() => setActiveTab(4)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors whitespace-nowrap ${
+                className={`px-3 py-1.5 rounded-md font-medium transition-colors whitespace-nowrap text-xs ${
                   activeTab === 4 
                     ? 'bg-red-500 text-white' 
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -508,45 +504,45 @@ const ApproveByAdmin = () => {
         </>
       )}
 
-      {/* Success Message */}
+      {/* Success Message - ลดขนาด */}
       {successMessage && (
-        <div className="mx-4 mt-4 p-3 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-green-600" />
-          <p className="text-green-700 text-sm flex-1">{successMessage}</p>
+        <div className="mx-3 mt-3 p-2.5 bg-green-100 border border-green-300 rounded-lg flex items-center gap-2">
+          <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
+          <p className="text-green-700 text-xs flex-1">{successMessage}</p>
           <button 
             onClick={() => setSuccessMessage('')}
             className="text-green-600 hover:text-green-800"
           >
-            <X className="w-4 h-4" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
       {/* Content */}
-      <div className="px-4 py-4 space-y-4">
+      <div className="px-3 py-2 space-y-3">
         {selectedUserId ? (
           <>
-            {/* Error Message */}
+            {/* Error Message - ลดขนาด */}
             {error && (
-              <div className="p-3 bg-red-100 border border-red-300 rounded-lg flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600" />
-                <p className="text-red-700 text-sm flex-1">{error}</p>
+              <div className="p-2.5 bg-red-100 border border-red-300 rounded-lg flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5 text-red-600" />
+                <p className="text-red-700 text-xs flex-1">{error}</p>
                 <button 
                   onClick={() => setError(null)}
                   className="text-red-600 hover:text-red-800"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             )}
 
             {filteredData.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-                <div className="text-6xl mb-4">📄</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">
+              <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+                <div className="text-4xl mb-3">📄</div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">
                   ไม่มีคำขอ OT {statusConfig[activeTab]?.text}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 text-sm">
                   {selectedUserId === "all" 
                     ? "ยังไม่มีการร้องขอ OT ในสถานะนี้" 
                     : "พนักงานคนนี้ยังไม่มี OT ในสถานะนี้"}
@@ -558,46 +554,46 @@ const ApproveByAdmin = () => {
                   request.status === 1 ? 'border-yellow-400' :
                   request.status === 3 ? 'border-green-400' : 'border-red-400'
                 }`}>
-                  {/* Card Header */}
-                  <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                  {/* Card Header - ลดขนาด */}
+                  <div className="px-3 py-2.5 border-b border-gray-100 bg-gray-50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-600" />
-                        <span className="font-medium text-gray-900">{request.username}</span>
+                        <User className="w-3.5 h-3.5 text-gray-600" />
+                        <span className="font-medium text-gray-900 text-sm">{request.username}</span>
                       </div>
                       {getStatusBadge(request.status)}
                     </div>
                   </div>
 
-                  {/* Card Body */}
-                  <div className="px-4 py-4 space-y-3">
+                  {/* Card Body - ลดขนาดและ spacing */}
+                  <div className="px-3 py-3 space-y-2.5">
                     {/* Reason */}
                     <div className="flex items-start gap-2">
-                      <MessageCircle className="w-4 h-4 text-gray-500 mt-0.5" />
-                      <div>
+                      <MessageCircle className="w-3.5 h-3.5 text-gray-500 mt-0.5" />
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500">เหตุผล</p>
-                        <p className="text-sm text-gray-900">{request.reason}</p>
+                        <p className="text-xs text-gray-900 break-words">{request.reason}</p>
                       </div>
                     </div>
 
-                    {/* Date & Time with Duration */}
+                    {/* Date & Time with Duration - ปรับให้กะทัดรัด */}
                     <div className="flex items-start gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500 mt-0.5" />
+                      <Calendar className="w-3.5 h-3.5 text-gray-500 mt-0.5" />
                       <div className="flex-1">
                         <p className="text-xs text-gray-500">ระยะเวลา</p>
-                        <div className="bg-gray-50 rounded-lg p-3 mt-1">
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs text-gray-500">เริ่ม</span>
-                            <span className="text-sm text-gray-900">{formatDateTime(request.start_time)}</span>
+                        <div className="bg-gray-50 rounded-lg p-2 mt-1 space-y-1">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-gray-500">เริ่ม:</span>
+                            <span className="text-gray-900">{formatDateTime(request.start_time)}</span>
                           </div>
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-xs text-gray-500">สิ้นสุด</span>
-                            <span className="text-sm text-gray-900">{formatDateTime(request.end_time)}</span>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-gray-500">สิ้นสุด:</span>
+                            <span className="text-gray-900">{formatDateTime(request.end_time)}</span>
                           </div>
-                          <div className="border-t pt-2 mt-2">
+                          <div className="border-t pt-1 mt-1">
                             <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-500">รวมเวลา</span>
-                              <div className="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs font-medium">
+                              <span className="text-xs text-gray-500">รวม:</span>
+                              <div className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded text-xs font-medium">
                                 {formatHours(calculateHours(request.start_time, request.end_time))}
                               </div>
                             </div>
@@ -608,21 +604,21 @@ const ApproveByAdmin = () => {
 
                     {/* Approver */}
                     <div className="flex items-start gap-2">
-                      <User className="w-4 h-4 text-gray-500 mt-0.5" />
-                      <div>
+                      <User className="w-3.5 h-3.5 text-gray-500 mt-0.5" />
+                      <div className="flex-1">
                         <p className="text-xs text-gray-500">ผู้รับรอง</p>
-                        <p className="text-sm text-gray-900">{request.approve}</p>
+                        <p className="text-xs text-gray-900">{request.approve}</p>
                       </div>
                     </div>
 
-                    {/* แสดงข้อมูลการไม่อนุมัติ (รุ่นใหม่) */}
+                    {/* แสดงข้อมูลการไม่อนุมัติ - ลดขนาด */}
                     {request.status === 4 && rejectDetails[request.id] && (
-                      <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 space-y-2">
                         <div className="flex items-start gap-2">
-                          <MessageCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                          <MessageCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
                           <div className="flex-1">
                             <p className="text-xs text-red-500 font-medium mb-1">เหตุผลที่ไม่อนุมัติ</p>
-                            <p className="text-sm text-red-800 bg-white border border-red-200 rounded p-2">
+                            <p className="text-xs text-red-800 bg-white border border-red-200 rounded p-1.5 break-words">
                               {rejectDetails[request.id].reason_reject}
                             </p>
                           </div>
@@ -630,10 +626,10 @@ const ApproveByAdmin = () => {
                         
                         {rejectDetails[request.id].approve_admin && (
                           <div className="flex items-start gap-2">
-                            <User className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <User className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
                               <p className="text-xs text-red-500 font-medium mb-1">ผู้ไม่อนุมัติ</p>
-                              <p className="text-sm text-red-800 bg-white border border-red-200 rounded p-2">
+                              <p className="text-xs text-red-800 bg-white border border-red-200 rounded p-1.5">
                                 {getEmployeeName(rejectDetails[request.id].approve_admin)}
                               </p>
                             </div>
@@ -645,10 +641,10 @@ const ApproveByAdmin = () => {
                     {/* แสดงเหตุผลที่ไม่อนุมัติ (เก่า - fallback) */}
                     {request.status === 4 && !rejectDetails[request.id] && rejectedReasons[request.id] && (
                       <div className="flex items-start gap-2">
-                        <MessageCircle className="w-4 h-4 text-red-500 mt-0.5" />
-                        <div>
+                        <MessageCircle className="w-3.5 h-3.5 text-red-500 mt-0.5" />
+                        <div className="flex-1">
                           <p className="text-xs text-red-500">เหตุผลที่ไม่อนุมัติ</p>
-                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-800 text-sm mt-1">
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-2 text-red-800 text-xs mt-1 break-words">
                             {rejectedReasons[request.id]}
                           </div>
                         </div>
@@ -656,23 +652,23 @@ const ApproveByAdmin = () => {
                     )}
                   </div>
 
-                  {/* Action Buttons - Only show for pending requests */}
+                  {/* Action Buttons - ปรับขนาดให้เหมาะกับมือถือ */}
                   {request.status === 1 && (
-                    <div className="px-4 py-3 border-t border-gray-100 bg-gray-50">
-                      <div className="flex gap-3">
+                    <div className="px-3 py-2.5 border-t border-gray-100 bg-gray-50">
+                      <div className="flex gap-2">
                         <button
                           onClick={() => handleReject(index, request.id)}
                           disabled={processingId === request.id}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
                         >
                           {processingId === request.id ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-600"></div>
                               กำลังดำเนินการ...
                             </>
                           ) : (
                             <>
-                              <X className="w-4 h-4" />
+                              <X className="w-3.5 h-3.5" />
                               ไม่อนุมัติ
                             </>
                           )}
@@ -680,16 +676,16 @@ const ApproveByAdmin = () => {
                         <button
                           onClick={() => handleApprove(index, request.id)}
                           disabled={processingId === request.id}
-                          className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
                         >
                           {processingId === request.id ? (
                             <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                               กำลังดำเนินการ...
                             </>
                           ) : (
                             <>
-                              <Check className="w-4 h-4" />
+                              <Check className="w-3.5 h-3.5" />
                               อนุมัติ
                             </>
                           )}
@@ -700,7 +696,7 @@ const ApproveByAdmin = () => {
 
                   {/* Status Message for completed requests */}
                   {request.status !== 1 && (
-                    <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
+                    <div className="px-3 py-2 border-t border-gray-100 bg-gray-50">
                       <p className="text-xs text-gray-500 text-center">
                         {request.status === 3 ? 'คำขอนี้ได้รับการอนุมัติแล้ว' : 'คำขอนี้ไม่ได้รับการอนุมัติ'}
                       </p>
@@ -712,27 +708,27 @@ const ApproveByAdmin = () => {
 
             {/* Loading More */}
             {loading && requests.length > 0 && (
-              <div className="text-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="text-center py-3">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto"></div>
               </div>
             )}
           </>
         ) : (
-          /* Welcome State */
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center">
-            <div className="text-6xl mb-4">👋</div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          /* Welcome State - ลดขนาด */
+          <div className="bg-white rounded-xl shadow-sm p-6 text-center">
+            <div className="text-4xl mb-3">👋</div>
+            <h3 className="text-base font-semibold text-gray-700 mb-2">
               ยินดีต้อนรับ
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-sm">
               เริ่มต้นด้วยการเลือกพนักงานที่ต้องการดู OT
             </p>
           </div>
         )}
       </div>
 
-      {/* Bottom Safe Area */}
-      <div className="h-6"></div>
+      {/* Bottom Safe Area - ลดขนาด */}
+      <div className="h-4"></div>
     </div>
   );
 };

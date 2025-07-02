@@ -32,23 +32,23 @@ export default function AppRoutes() {
 
 
         <Route element={user ? <Layout /> : <Navigate to="/login" replace />}>
-          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["user","senior", "Admin"]} />}>
             <Route path="/" element={<Home />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin","senior"]} />}>
             <Route path="/report" element={<Report />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin" ,"senior"]} />}>
             <Route path="/checkinOutsize" element={<CheckinOutsize />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin" ,"senior"]} />}>
             <Route path="/OT" element={<OT />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={["user", "Admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["user", "Admin","senior"]} />}>
             <Route path="/MyOT" element={<MyOT />} />
           </Route>
 
@@ -56,7 +56,7 @@ export default function AppRoutes() {
             <Route path="/reportAll" element={<ReportAll />} />
           </Route>
 
-          <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["Admin","senior"]} />}>
             <Route path="/Approve" element={<Approve />} />
           </Route>
 

@@ -1,38 +1,76 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Sidebar() {
-  const { user, logout } = useAuth(); 
-  const [isOpen, setIsOpen] = useState(false); // สถานะเปิด-ปิด Sidebar
+  const { user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchEndX, setTouchEndX] = useState(null);
 
   if (!user) return null;
 
   const userRoles = user.permissions?.map((role) => role.toLowerCase()) || [];
 
   const menuItems = [
-    { path: "/", label: "Home", roles: ["user", "admin"] },
-    { path: "/report", label: "Report", roles: ["user", "admin"] },
-    { path: "/reportAll", label: "Report User", roles: ["admin"] },
-    { path: "/Approve", label: "Approve", roles: ["admin"] },
+    { path: "/", label: "Home", roles: ["user", "senior" ,"admin"] },
+    { path: "/report", label: "Report", roles: ["user", "senior" ,"admin" ] },
+    { path: "/reportAll", label: "Report User", roles: ["superadmin","admin"] },
+    { path: "/Approve", label: "Approve", roles: ["senior","admin"] },
     { path: "/CalculateSalary", label: "OT", roles: ["admin"] },
     { path: "/ApproveByAdmin", label: "Approve (ADMIN)", roles: ["admin"] },
-
   ];
+
+  // 👇 Detect swipe gesture
+  useEffect(() => {
+    const handleTouchStart = (e) => {
+      setTouchStartX(e.touches[0].clientX);
+    };
+
+    const handleTouchMove = (e) => {
+      setTouchEndX(e.touches[0].clientX);
+    };
+
+    const handleTouchEnd = () => {
+      if (touchStartX !== null && touchEndX !== null) {
+        const distance = touchEndX - touchStartX;
+
+        // 👈 สไลด์ขวาเกิน 75px เพื่อเปิด sidebar
+        if (distance > 75 && !isOpen) {
+          setIsOpen(true);
+        }
+
+        // 👉 สไลด์ซ้ายเกิน 75px เพื่อปิด
+        if (distance < -75 && isOpen) {
+          setIsOpen(false);
+        }
+      }
+
+      setTouchStartX(null);
+      setTouchEndX(null);
+    };
+
+    document.addEventListener("touchstart", handleTouchStart);
+    document.addEventListener("touchmove", handleTouchMove);
+    document.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [touchStartX, touchEndX, isOpen]);
 
   return (
     <>
-      <button
-        className="absolute top-5 left-5 z-50 text-white bg-gray-800 p-2 rounded-md md:hidden"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        ☰
-      </button>
+      
 
       <aside
-        className={`fixed top-0 left-0 h-full md:h-screen w-64 bg-gray-800 text-white p-5 flex flex-col justify-between transform transition-transform duration-300 z-50 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:relative md:translate-x-0`}
+        className={`
+          fixed top-0 left-0 h-screen w-64 bg-gray-800 text-white p-5 flex flex-col justify-between transform transition-transform duration-300 z-50 overflow-y-auto
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:sticky md:top-0 md:h-screen md:translate-x-0
+        `}
       >
         <div>
           <h2 className="text-xl font-bold mb-5">GROUPMAKER</h2>
